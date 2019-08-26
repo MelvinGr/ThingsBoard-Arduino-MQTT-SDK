@@ -78,13 +78,10 @@ RPC_Response processSwitchChange(const RPC_Data &data)
   return RPC_Response("example_response", 22.02);
 }
 
-const size_t callbacks_size = 2;
-RPC_Callback callbacks[callbacks_size] = {
+std::vector<RPC_Callback> callbacks = {
   { "example_set_temperature",    processTemperatureChange },
   { "example_set_switch",         processSwitchChange }
 };
-
-bool subscribed = false;
 
 void loop() {
   delay(100);
@@ -104,8 +101,6 @@ void loop() {
   }
 
   if (!tb.connected()) {
-    subscribed = false;
-
     // Connect to the ThingsBoard
     Serial.print("Connecting to: ");
     Serial.print(THINGSBOARD_SERVER);
@@ -117,19 +112,18 @@ void loop() {
     }
   }
 
-  if (!subscribed) {
+  if (!tb.RPC_Subscribed()) {
     Serial.println("Subscribing for RPC...");
 
     // Perform a subscription. All consequent data processing will happen in
     // processTemperatureChange() and processSwitchChange() functions,
     // as denoted by callbacks[] array.
-    if (!tb.RPC_Subscribe(callbacks, callbacks_size)) {
+    if (!tb.RPC_Subscribe(callbacks)) {
       Serial.println("Failed to subscribe for RPC");
       return;
     }
 
     Serial.println("Subscribe done");
-    subscribed = true;
   }
 
   Serial.println("Waiting for data...");
