@@ -53,8 +53,8 @@ void loop() {
   // See https://thingsboard.io/docs/reference/mqtt-api/#telemetry-upload-api
   // for more details
 
-  tb.sendTelemetryInt("temperature", 22);
-  tb.sendTelemetryFloat("humidity", 42.5);
+  tb.sendTelemetry("temperature", 22);
+  tb.sendTelemetry("humidity", 42.5);
 
   tb.loop();
 }

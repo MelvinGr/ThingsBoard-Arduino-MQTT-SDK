@@ -113,8 +113,8 @@ void loop() {
   // for more details
 
   Serial.println("Sending temperature data...");
-  tb.sendTelemetryInt("temperature", 18);
+  tb.sendTelemetry("temperature", 18);
 
   Serial.println("Sending humidity data...");
-  tb.sendTelemetryFloat("humidity", 22.23);
+  tb.sendTelemetry("humidity", 22.23);
 }

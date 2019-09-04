@@ -72,7 +72,11 @@ private:
 	union data {
 		const char* str;
 		bool        boolean;
+#if ARDUINOJSON_HAS_INT64
+		int64_t     integer;
+#else
 		int32_t     integer;
+#endif
 		float       real;
 	};
 
@@ -185,7 +189,7 @@ public:
 		if (!host || !access_token)
 			return false;
 
-		ThingsBoardSized::RPC_Unsubscribe(); // Cleanup any subscriptions
+		RPC_Unsubscribe(); // Cleanup any subscriptions
 		m_client.setServer(host, port);
 		return m_client.connect("TbDev", access_token, nullptr);
 	}
@@ -208,24 +212,13 @@ public:
 	//----------------------------------------------------------------------------
 	// Telemetry API
 
-	// Sends integer telemetry data to the ThingsBoard, returns true on success.
-	inline bool sendTelemetryInt(const char* key, int32_t value) {
+	// Sends telemetry data to the ThingsBoard, returns true on success.
+	template<typename T> bool sendTelemetry(const char* key, const T& value) {
 		return sendKeyval(key, value);
 	}
 
-	// Sends boolean telemetry data to the ThingsBoard, returns true on success.
-	inline bool sendTelemetryBool(const char* key, bool value) {
-		return sendKeyval(key, value);
-	}
-
-	// Sends float telemetry data to the ThingsBoard, returns true on success.
-	inline bool sendTelemetryFloat(const char* key, float value) {
-		return sendKeyval(key, value);
-	}
-
-	// Sends string telemetry data to the ThingsBoard, returns true on success.
-	inline bool sendTelemetryString(const char* key, const char* value) {
-		return sendKeyval(key, value);
+	inline bool sendTelemetry(const char* attrName, const String& value) {
+		return sendTelemetry(attrName, value.c_str());
 	}
 
 	// Sends aggregated telemetry to the ThingsBoard.
@@ -241,24 +234,13 @@ public:
 	//----------------------------------------------------------------------------
 	// Attribute API
 
-	// Sends integer attribute with given name and value.
-	inline bool sendAttributeInt(const char* attrName, int32_t value) {
+	// Sends attribute with given name and value.
+	template<typename T> bool sendAttribute(const char* attrName, const T& value) {
 		return sendKeyval(attrName, value, false);
 	}
 
-	// Sends boolean attribute with given name and value.
-	inline bool sendAttributeBool(const char* attrName, bool value) {
-		return sendKeyval(attrName, value, false);
-	}
-
-	// Sends float attribute with given name and value.
-	inline bool sendAttributeFloat(const char* attrName, float value) {
-		return sendKeyval(attrName, value, false);
-	}
-
-	// Sends string attribute with given name and value.
-	inline bool sendAttributeString(const char* attrName, const char* value) {
-		return sendKeyval(attrName, value, false);
+	inline bool sendAttribute(const char* attrName, const String& value) {
+		return sendAttribute(attrName, value.c_str());
 	}
 
 	// Sends aggregated attributes to the ThingsBoard.
@@ -276,17 +258,17 @@ public:
 
 	// Subscribes multiple RPC callbacks with given size
 	bool RPC_Subscribe(const std::vector<RPC_Callback>& callbacks) {
-		if (ThingsBoardSized::m_subscribedInstance)
+		if (m_subscribedInstance)
 			return false;
 
 		if (!m_client.subscribe("v1/devices/me/rpc/request/+"))
 			return false;
 
-		ThingsBoardSized::m_subscribedInstance = true;
+		m_subscribedInstance = true;
 		m_rpcCallbacks.assign(callbacks.begin(), callbacks.end());
 
 		m_client.setCallback([&](char* topic, uint8_t* payload, uint32_t length) {
-			if (ThingsBoardSized::m_subscribedInstance)
+			if (m_subscribedInstance)
 				process_message(topic, payload, length);
 			});
 
@@ -294,7 +276,7 @@ public:
 	}
 
 	inline bool RPC_Unsubscribe() {
-		ThingsBoardSized::m_subscribedInstance = false;
+		m_subscribedInstance = false;
 		return m_client.unsubscribe("v1/devices/me/rpc/request/+");
 	}
 
@@ -439,24 +421,13 @@ public:
 	//----------------------------------------------------------------------------
 	// Telemetry API
 
-	// Sends integer telemetry data to the ThingsBoard, returns true on success.
-	inline bool sendTelemetryInt(const char* key, int32_t value) {
+	// Sends telemetry data to the ThingsBoard, returns true on success.
+	template<typename T> bool sendTelemetry(const char* key, const T& value) {
 		return sendKeyval(key, value);
 	}
 
-	// Sends boolean telemetry data to the ThingsBoard, returns true on success.
-	inline bool sendTelemetryBool(const char* key, bool value) {
-		return sendKeyval(key, value);
-	}
-
-	// Sends float telemetry data to the ThingsBoard, returns true on success.
-	inline bool sendTelemetryFloat(const char* key, float value) {
-		return sendKeyval(key, value);
-	}
-
-	// Sends string telemetry data to the ThingsBoard, returns true on success.
-	inline bool sendTelemetryString(const char* key, const char* value) {
-		return sendKeyval(key, value);
+	inline bool sendTelemetry(const char* attrName, const String& value) {
+		return sendTelemetry(attrName, value.c_str());
 	}
 
 	// Sends aggregated telemetry to the ThingsBoard.
@@ -488,24 +459,13 @@ public:
 	//----------------------------------------------------------------------------
 	// Attribute API
 
-	// Sends integer attribute with given name and value.
-	inline bool sendAttributeInt(const char* attrName, int32_t value) {
+	// Sends attribute with given name and value.
+	template<typename T> bool sendAttribute(const char* attrName, const T& value) {
 		return sendKeyval(attrName, value, false);
 	}
 
-	// Sends boolean attribute with given name and value.
-	inline bool sendAttributeBool(const char* attrName, bool value) {
-		return sendKeyval(attrName, value, false);
-	}
-
-	// Sends float attribute with given name and value.
-	inline bool sendAttributeFloat(const char* attrName, float value) {
-		return sendKeyval(attrName, value, false);
-	}
-
-	// Sends string attribute with given name and value.
-	inline bool sendAttributeString(const char* attrName, const char* value) {
-		return sendKeyval(attrName, value, false);
+	inline bool sendAttribute(const char* attrName, const String& value) {
+		return sendAttribute(attrName, value.c_str());
 	}
 
 	// Sends aggregated attributes to the ThingsBoard.
